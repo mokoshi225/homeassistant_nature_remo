@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import logging
 import voluptuous as vol
-from __future__ import annotations
 from typing import Any
 from homeassistant import config_entries
 from homeassistant.core import callback
