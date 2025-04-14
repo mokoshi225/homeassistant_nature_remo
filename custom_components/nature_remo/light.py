@@ -62,12 +62,10 @@ class NatureRemoLight(LightEntity):
     Representation of a Nature Remo light device.
     """
 
-    def __init__(
-        self, coordinator: NatureRemoCoordinator, appliance, device, api
-    ) -> None:
+    def __init__(self, coordinator, appliance, device, api) -> None:
         """ライトエンティティの初期設定を行う. / Initialize the light entity."""
-        self._attr_unique_id = f"nature_remo_light_{appliance["appliance_id"]}"
-        self._attr_name = f"Nature Remo {appliance["name"]}"
+        self._attr_unique_id = f"nature_remo_light_{appliance['appliance_id']}"
+        self._attr_name = f"Nature Remo {appliance['name']}"
         self._coordinator = coordinator  # コーディネーターを使う
         self._appliance = appliance
         self._device = device
@@ -102,6 +100,14 @@ class NatureRemoLight(LightEntity):
         """ライトがONかOFFかを返す. / Return whether the light is ON or OFF."""
         return self._is_on
 
+    @property
+    def extra_state_attributes(self):
+        """
+        現在の照明モードを表すカスタム属性を返す.
+        Returns a dictionary of custom attributes related to the current state.
+        """
+        return {"mode": self._last_mode}
+
     async def async_added_to_hass(self):
         """
         エンティティがHome Assistantに追加されたら更新をトリガー.
@@ -130,14 +136,11 @@ class NatureRemoLight(LightEntity):
             state = appliance["light"]["state"]
             self._is_on = state["power"] == "on"
             # 最後に指定した照明状態を取得
-            self._last_mode = state["last_button"]
+            self._last_mode = state.get("last_button", "on")
 
             # 有効な効果を取得
-            effect_buttons = appliance["light"].get("buttons", {})
-            effect_button_list = []
-            for effect_button in effect_buttons:
-                effect_button_list.append(effect_button["name"])
-            self._supported_effects = effect_button_list
+            effect_buttons = appliance["light"].get("buttons", [])
+            self._supported_effects = [btn["name"] for btn in effect_buttons]
             _LOGGER.debug(f"[{self._attr_name}]有効ボタン: {self._supported_effects}")
 
         # HomeAssistantへ状態を通知
@@ -160,22 +163,17 @@ class NatureRemoLight(LightEntity):
         _LOGGER.debug(f"[{self._attr_name}]send_light_command response: {response}")
 
         # 状態を更新
-        self._is_on = True
+        self._is_on = mode != "off"
         self._last_mode = mode
-        if mode == "off":
-            self._is_on = False
-
         # HomeAssistantへ状態通知
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """ライトをOFFにする. / Turn off the light."""
-        effect = "off"
-        await self._api.send_light_command(self._appliance_id, effect)
-
+        await self._api.send_light_command(self._appliance_id, "off")
         # 状態を更新
         self._is_on = False
-        self._last_mode = effect
+        self._last_mode = "off"
 
         # HomeAssistantへ状態通知
         self.async_write_ha_state()

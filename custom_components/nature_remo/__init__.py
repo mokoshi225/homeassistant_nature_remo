@@ -55,6 +55,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # NatureRemo APIへリクエスト送信
         await api.send_light_command(light_entity._appliance_id, mode)
 
+        # エンティティの内部状態を即時更新
+        light_entity._last_mode = mode
+        light_entity._is_on = mode != "off"
+        light_entity.async_write_ha_state()
+
         return {"status": "success", "appliance_id": light_entity._appliance_id}
 
     hass.services.async_register(
