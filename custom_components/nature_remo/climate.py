@@ -25,6 +25,7 @@ MODE_MAP = {
     HVACMode.HEAT: "warm",
     HVACMode.DRY: "dry",
     HVACMode.FAN_ONLY: "blow",
+    HVACMode.AUTO: "auto",
 }
 
 PLATFORM_SCHEMA = vol.Schema(
@@ -149,6 +150,7 @@ class NatureRemoClimate(ClimateEntity):
         step = 1.0
         if len(set(differences)) == 1:
             step = differences[0]  # すべて同じならその値が刻み幅
+        _LOGGER.debug(f"target_temperature_step: {step}")
         return step
 
     @property
@@ -163,6 +165,7 @@ class NatureRemoClimate(ClimateEntity):
             return 0.0
 
         # 最小値を取得
+        _LOGGER.debug(f"min_temp: {min(temp_list)}")
         return min(temp_list)  # 最小値
 
     @property
@@ -176,6 +179,7 @@ class NatureRemoClimate(ClimateEntity):
             return 0.0
 
         # 最大値を取得
+        _LOGGER.debug(f"max_temp: {max(temp_list)}")
         return max(temp_list)  # 最大値
 
     @property
@@ -267,8 +271,12 @@ class NatureRemoClimate(ClimateEntity):
             self._button = appliance["settings"].get("button", "")
 
             # 目標温度
-            temp = appliance["settings"].get("temp", "25.0")
-            self._target_temperature = float(temp) if temp.isdigit() else 0.0
+            temp = appliance["settings"].get("temp", "20.0")
+            try:
+                self._target_temperature = float(temp)
+            except (ValueError, TypeError):
+                self._target_temperature = 0.0
+
             # 風量
             self._fan_mode = appliance["settings"].get("vol", "auto")
             # 風向き
@@ -288,6 +296,10 @@ class NatureRemoClimate(ClimateEntity):
                     set_range_modes.append(HVACMode.DRY)
                 if self._aircon_range_modes.get("warm", {}):
                     set_range_modes.append(HVACMode.HEAT)
+                if self._aircon_range_modes.get("blow", {}):
+                    set_range_modes.append(HVACMode.FAN_ONLY)
+                if self._aircon_range_modes.get("auto", {}):
+                    set_range_modes.append(HVACMode.AUTO)
                 self._hvac_modes = set_range_modes
 
         self.async_write_ha_state()
@@ -360,17 +372,22 @@ class NatureRemoClimate(ClimateEntity):
 
         _LOGGER.debug("Setting temperature to: %s", temperature)
 
+        set_temperature = self.format_temperature(temperature)
         payload = {
             "operation_mode": operation_mode,  # 現在のモードを維持
-            "temperature": str(
-                int(temperature)
-            ),  # 送信時に整数に変換（Remo API の仕様）
+            "temperature": set_temperature,
         }
 
         await self._api.send_command_climate(payload, self._appliance_id)
         self._target_temperature = temperature  # 状態を更新
         self._button = ""  # 温度設定を変更したらエアコンをONにする
         self.async_write_ha_state()
+
+    def format_temperature(self, value: float) -> str:
+        if value.is_integer():
+            return str(int(value))
+        else:
+            return str(value)
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         """風量を変更. / Change the fan mode."""
