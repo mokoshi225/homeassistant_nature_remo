@@ -1,7 +1,7 @@
 {
   "domain": "nature_remo",
   "name": "Nature Remo",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "config_flow": true,
   "dependencies": [],
   "requirements": [
@@ -11,5 +11,6 @@
     "@nanosns"
   ],
   "iot_class": "cloud_polling",
-  "documentation": "https://github.com/NaNaLinks/nature_remo#readme"
+  "documentation": "https://github.com/NaNaLinks/homeassistant_nature_remo#readme",
+  "issue_tracker": "https://github.com/NaNaLinks/homeassistant_nature_remo/issues"
 }
