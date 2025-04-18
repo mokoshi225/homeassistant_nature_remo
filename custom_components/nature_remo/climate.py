@@ -348,9 +348,12 @@ class NatureRemoClimate(ClimateEntity):
         _LOGGER.info("Set HVACMode: %s", response)
         # レスポンス情報をもとに現在の状態を更新する
         # 設定温度
-        temp = response.get("temp", "25.0")
-        self._target_temperature = float(temp) if temp.isdigit() else 0.0
         self._hvac_mode = self.get_remo_mode_to_hvac_mode(response.get("mode", ""))
+        if self._hvac_mode is HVACMode.FAN_ONLY:
+            temp = "0.0"
+        else:
+            temp = response.get("temp", "25.0")
+        self._target_temperature = float(temp)
         self._fan_mode = response.get("vol", "auto")
         self._swing_mode = response.get("dir", "auto")
         self._button = response.get("button", "")
