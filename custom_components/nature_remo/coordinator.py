@@ -29,6 +29,7 @@ class NatureRemoCoordinator(DataUpdateCoordinator):
         self.devices = {}
         self.aircons = {}
         self.lights = {}
+        self.ir_remotes = {}
         self.smart_meters = {}
         self.motion_sensors = {}  # motionセンサー用の辞書
         self.entity_map: dict[str, LightEntity] = {}
@@ -73,6 +74,7 @@ class NatureRemoCoordinator(DataUpdateCoordinator):
             self.aircons = {}
             self.lights = {}
             self.smart_meters = {}
+            self.ir_remotes = {}
 
             appliances = await self.api.get_appliances()
 
@@ -80,16 +82,17 @@ class NatureRemoCoordinator(DataUpdateCoordinator):
                 appliance_type = appliance.get("type")
                 appliance_id = appliance.get("id")
                 nickname = appliance.get("nickname", "Unnamed")
+                device_info = {
+                    "name": appliance.get("device", {}).get("name", "No Name"),
+                    "device_id": appliance.get("device", {}).get("id", ""),
+                    "firmware_version": appliance.get("device", {}).get(
+                        "firmware_version", ""
+                    ),
+                }
                 appliance_info = {
                     "name": nickname,
                     "appliance_id": appliance_id,
-                    "device": {
-                        "name": appliance.get("device", {}).get("name", "No Name"),
-                        "device_id": appliance.get("device", {}).get("id", ""),
-                        "firmware_version": appliance.get("device", {}).get(
-                            "firmware_version", ""
-                        ),
-                    },
+                    "device": device_info,
                 }
 
                 # スマートメーターの処理
@@ -105,13 +108,7 @@ class NatureRemoCoordinator(DataUpdateCoordinator):
                     self.smart_meters[appliance_id] = {
                         "name": nickname,
                         "appliance_id": appliance_id,
-                        "device": {
-                            "name": appliance.get("device", {}).get("name", "No Name"),
-                            "device_id": appliance.get("device", {}).get("id", ""),
-                            "firmware_version": appliance.get("device", {}).get(
-                                "firmware_version", ""
-                            ),
-                        },
+                        "device": device_info,
                         "buy_power": parsed["buy_power"],
                         "sold_power": parsed["sold_power"],
                         "current_power": parsed["instant_power"],
@@ -124,6 +121,17 @@ class NatureRemoCoordinator(DataUpdateCoordinator):
                 # 照明（LIGHT）の処理
                 elif appliance_type == "LIGHT":
                     self.lights[appliance_id] = appliance_info
+
+                # IRの処理
+                elif appliance_type == "IR":
+                    signals = appliance.get("signals", [])
+                    if signals:
+                        self.ir_remotes[appliance_id] = {
+                            "name": nickname,
+                            "appliance_id": appliance_id,
+                            "device": device_info,
+                            "signals": signals,
+                        }
 
             return {ac["id"]: ac for ac in appliances}
         except ClientError as err:
