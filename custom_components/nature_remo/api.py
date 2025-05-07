@@ -199,3 +199,15 @@ class NatureRemoAPI:
             "sold_power": sold_power,
             "instant_power": instant_power,
         }
+
+    async def send_command_signal(self, signal_id: str) -> None:
+        """Send a signal by its ID using the Nature Remo API."""
+        api_url = f"{NATURE_REMO_URL}/signals/{signal_id}/send"
+        headers = {"Authorization": f"Bearer {self._token}"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_url, headers=headers) as response:
+                if response.status != 200:
+                    text = await response.text()
+                    _LOGGER.error("Failed to send signal %s: %s", signal_id, text)
+                    response.raise_for_status()
