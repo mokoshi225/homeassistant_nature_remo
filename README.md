@@ -13,12 +13,19 @@ Please use this integration **at your own risk**.
 
 ---
 
+## v0.2.0 Update
+
+- Added support for remote entities using signals defined in IR, AC, and LIGHT appliances.
+
+---
+
 ## Features
 
 - Control appliances (air conditioners, lights) registered to Nature Remo
 - Retrieve temperature, humidity, illuminance, and motion sensor data
 - Access smart meter data (consumption, generation, instant power) via Nature Remo E / E Lite
 - Control lighting modes using custom service calls
+- Send IR commands using remote entities created from defined signals (added in v0.2.0)
 
 ---
 
@@ -52,13 +59,32 @@ Please use this integration **at your own risk**.
 
 ## Supported Entities
 
-| Type    | Description                                                  |
-| ------- | ------------------------------------------------------------ |
-| climate | Control air conditioners (cooling, heating, dry)             |
-| light   | Control lights (on/off, mode selection)                      |
-| sensor  | Temperature, humidity, illuminance, motion, power (buy/sell) |
+| Type    | Description                                                        |
+|---------|--------------------------------------------------------------------|
+| climate | Control air conditioners (cooling, heating, dry)                   |
+| light   | Control lights (on/off, mode selection)                            |
+| sensor  | Temperature, humidity, illuminance, motion, power (buy/sell)      |
+| remote  | Send infrared signals defined as "signals" for IR/AC/LIGHT types  |
 
 *Additional entities may be supported in future updates.*
+
+---
+
+## Sample: Using Remote Entities
+
+This integration supports `remote` entities generated from Nature Remo's defined `signals`. These entities allow you to send IR commands directly from Home Assistant.
+
+### Example: Service Call
+
+You can call a signal like this using `remote.send_command`:
+
+```yaml
+service: remote.send_command
+target:
+  entity_id: remote.living_room_remote  # Your remote entity ID
+data:
+  command: "Power On"  # The name of the signal as defined in Remo
+```
 
 ---
 
