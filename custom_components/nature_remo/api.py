@@ -201,7 +201,10 @@ class NatureRemoAPI:
         }
 
     async def send_command_signal(self, signal_id: str) -> None:
-        """Send a signal by its ID using the Nature Remo API."""
+        """
+        指定されたシグナルIDを使ってNature Remo APIを送信する.
+        Send a signal by its ID using the Nature Remo API.
+        """
         api_url = f"{NATURE_REMO_URL}/signals/{signal_id}/send"
         headers = {"Authorization": f"Bearer {self._token}"}
 

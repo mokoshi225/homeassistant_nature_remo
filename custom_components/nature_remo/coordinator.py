@@ -117,10 +117,28 @@ class NatureRemoCoordinator(DataUpdateCoordinator):
                 # エアコン（AC）の処理
                 elif appliance_type == "AC":
                     self.aircons[appliance_id] = appliance_info
+                    # signalsにボタンが設定されていればリモートエンティティに追加
+                    signals = appliance.get("signals", [])
+                    if signals:
+                        self.ir_remotes[appliance_id] = {
+                            "name": nickname,
+                            "appliance_id": appliance_id,
+                            "device": device_info,
+                            "signals": signals,
+                        }
 
                 # 照明（LIGHT）の処理
                 elif appliance_type == "LIGHT":
                     self.lights[appliance_id] = appliance_info
+                    # signalsにボタンが設定されていればリモートエンティティに追加
+                    signals = appliance.get("signals", [])
+                    if signals:
+                        self.ir_remotes[appliance_id] = {
+                            "name": nickname,
+                            "appliance_id": appliance_id,
+                            "device": device_info,
+                            "signals": signals,
+                        }
 
                 # IRの処理
                 elif appliance_type == "IR":

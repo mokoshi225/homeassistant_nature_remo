@@ -1,5 +1,3 @@
-"""Support for IR remotes in Nature Remo integration."""
-
 from __future__ import annotations
 
 import logging
@@ -27,7 +25,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up remote entities for Nature Remo (IR Remotes)."""
+    """Nature Remoのリモートエンティティを初期化する. / Set up remote entities for Nature Remo (IR Remotes)."""
     coordinator: NatureRemoCoordinator = hass.data[DOMAIN][entry.entry_id][
         "coordinator"
     ]
@@ -44,7 +42,10 @@ async def async_setup_entry(
 
 
 class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEntity):
-    """Representation of a Nature Remo IR Remote as a RemoteEntity."""
+    """
+    Nature Remo の赤外線リモコンを表すRemoteEntityクラス.
+    Representation of a Nature Remo IR Remote as a RemoteEntity.
+    """
 
     def __init__(
         self,
@@ -52,7 +53,7 @@ class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEnt
         api: NatureRemoAPI,
         remote_info: dict[str, Any],
     ) -> None:
-        """Initialize the remote entity."""
+        """リモートエンティティを初期化. / Initialize the remote entity."""
         super().__init__(coordinator)
         self._attr_unique_id = f"nature_remo_remote_{remote_info['appliance_id']}"
         self._attr_name = f"Nature Remo {remote_info["name"]}"
@@ -74,6 +75,10 @@ class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEnt
 
     @property
     def device_info(self):
+        """
+        Home Assistantのデバイス一覧に表示するための基本情報を返す.
+        Returns basic device info for display in Home Assistant's device registry.
+        """
         return {
             "identifiers": {(DOMAIN, self._device["device_id"])},
             "name": self._device["name"],
@@ -83,7 +88,7 @@ class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEnt
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return extra attributes for this entity."""
+        """このエンティティの追加属性を返却する. / Return extra attributes for this entity."""
         return {
             "available_commands": list(self._commands.keys()),
             "command": self._attr_state,
@@ -91,15 +96,16 @@ class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEnt
 
     @property
     def available(self) -> bool:
+        """このエンティティが利用可能かどうかを返却する. / Return whether this entity is available."""
         return super().available and bool(self._commands)
 
     @property
     def state(self) -> str | None:
-        """Return the current state (last command sent)."""
+        """現在の状態（最後に送信されたコマンド）を返却する. / Return the current state (last command sent)."""
         return self._attr_state
 
     async def async_send_command(self, command: str | list[str], **kwargs: Any) -> None:
-        """Send a command to the remote."""
+        """指定されたコマンドをリモコンに送信します。 / Send a command to the remote."""
         if isinstance(command, str):
             command = [command]
 
@@ -121,7 +127,7 @@ class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEnt
             self.async_write_ha_state()
 
     async def async_turn_on(self) -> None:
-        """Handle the turn_on service call."""
+        """turn_on サービス呼び出し時の処理 / Handle the turn_on service call."""
         if self._power_on_id:
             await self.coordinator.api.send_command_signal(self._power_on_id)
             self._attr_state = "on"
@@ -131,7 +137,7 @@ class NatureRemoRemoteEntity(CoordinatorEntity[NatureRemoCoordinator], RemoteEnt
             raise HomeAssistantError(f"Power ON command not available for {self.name}")
 
     async def async_turn_off(self) -> None:
-        """Handle the turn_off service call."""
+        """turn_off サービス呼び出し時の処理. / Handle the turn_off service call."""
         if self._power_off_id:
             await self.coordinator.api.send_command_signal(self._power_off_id)
             self._attr_state = "off"
