@@ -8,7 +8,7 @@ from .coordinator import NatureRemoCoordinator
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = ["climate", "light", "sensor"]
+PLATFORMS = ["climate", "light", "sensor", "remote"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
