@@ -334,7 +334,13 @@ class NatureRemoClimate(ClimateEntity):
             return
 
         if hvac_mode == HVACMode.OFF:
-            payload = {"button": "power-off"}
+            payload = {
+                "button": "power-off",
+                "extra": {
+				    "autoclean": "off",
+				    "eco": "on"
+                }
+            }
             self._button = "power-off"
         else:
             operation_mode = MODE_MAP.get(hvac_mode)
