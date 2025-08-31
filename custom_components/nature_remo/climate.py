@@ -337,7 +337,7 @@ class NatureRemoClimate(ClimateEntity):
             payload = {
                 "button": "power-off",
                 "extra": {
-				    "autoclean": "off",
+				    "autoclean": "on",
 				    "eco": "on"
                 }
             }

@@ -11,28 +11,34 @@ Nature RemoをHome Assistantに連携するためのカスタムインテグレ�
 
 ---
 
-## v0.2.0の更新内容
+## 本プロジェクトはNaNaLinks様からのフォークです。
 
-- IR・AC・LIGHTの機器に定義されたsignalsから、リモートエンティティ（remote entity）を自動生成する機能を追加しました。
+- Nature_remo関連のインテグレーションの中で更新が一番最近(2025/5/9)なこちらをフォークさせていただきました。
 
 ---
 
-## 主な機能
+## 背景
 
-- Nature Remoに登録された家電（エアコン・照明）の操作
-- 温度・湿度・照度・人感センサーのデータ取得
-- Nature Remo E / E Liteによるスマートメーターの電力データ取得
-- カスタムサービスによる照明の詳細な制御（モード指定など）
-- signals に基づいて生成されたリモートエンティティを使って IR コマンドを送信（v0.2.0 以降で対応）
+- 内部クリーン機能は、冷房で発生したエアコン内の結露によるカビ発生を防ぐために、運転停止後しばらく送風モードで結露を飛ばす便利機能である。
+- 2025年、スマートホーム機器はSwitchbotがトップシェアだが、未だにアプリが、霧ヶ峰エアコンの風向・内部クリーン・Ecoに対応しない。
+- さらにSwitchbotの公式インテグレーション自体も、エアコンは温度ぐらいしか操作できないようだ。
+- Nature remoは知名度が低いものの、以前からAPIを公開しており玄人に好まれてきた。2024年8月23日、アプリが内部クリーン・Ecoに対応した。
+
+## 変更点
+
+- インテグレーションの仕組みはよくわからないので、最終的にNature remo APIに送信するPayloadのうち、power-offのコマンドに、autoclean on, echo onも追記する。
+- これでいいのかわからないけどとりあえずHAOSから電源オフを送った後に送風し始めたのでおけ！
+- 今は夏なのでこれでいい。
+- 冬になったらこの記述を消せばいい。
 
 ---
 
 ## インストール方法
 
-1. 本リポジトリを以下のパスに配置してください：
+1. 本リポジトリのcustom_components以下を、HAOSのconfig/custom_components以下に配置してください：
 
 ```
-<設定フォルダ>/custom_components/nature_remo/
+config/custom_components/nature_remo/
 ```
 
 2. Home Assistantを再起動してください。
@@ -87,7 +93,7 @@ data:
 
 ---
 
-## 作者情報
+## 作者様情報
 
 - 作成者：[@nanosns](https://github.com/nanosns)(NaNaRin)
 - 所属・運営：[@NaNaLinks](https://github.com/NaNaLinks)
